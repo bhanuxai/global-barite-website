@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard | Global Barite</title>
+
+<link rel="stylesheet" href="admin.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+<div class="admin-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">GLOBAL BARITE</div>
+
+    <nav class="sidebar-nav">
+      <a class="active">Dashboard</a>
+      <a>Quote Requests</a>
+      <a>Contact Inquiries</a>
+      <a>Products</a>
+      <a>Quality & Certificates</a>
+      <a>Operations</a>
+      <a>Users</a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a class="logout">Logout</a>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="admin-main">
+
+    <!-- TOP BAR -->
+    <header class="admin-top">
+      <h1>Dashboard</h1>
+      <span class="admin-user">Admin</span>
+    </header>
+
+    <!-- STATS -->
+    <section class="stats-grid">
+      <div class="stat-card">
+        <h4>Quote Requests</h4>
+        <strong>28</strong>
+      </div>
+
+      <div class="stat-card">
+        <h4>Inquiries</h4>
+        <strong>14</strong>
+      </div>
+
+      <div class="stat-card">
+        <h4>Active Products</h4>
+        <strong>4</strong>
+      </div>
+
+      <div class="stat-card">
+        <h4>Certificates</h4>
+        <strong>6</strong>
+      </div>
+    </section>
+
+    <!-- TABLE -->
+    <section class="table-card">
+      <h3>Recent Quote Requests</h3>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Company</th>
+            <th>Product</th>
+            <th>Quantity (MT)</th>
+            <th>Country</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td>ABC Drilling</td>
+            <td>Barite 4.20 SG</td>
+            <td>500</td>
+            <td>UAE</td>
+            <td><span class="status pending">Pending</span></td>
+          </tr>
+
+          <tr>
+            <td>XYZ Oilfield</td>
+            <td>Barite Lumps 4.22</td>
+            <td>1200</td>
+            <td>USA</td>
+            <td><span class="status approved">Approved</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+  </main>
+
+</div>
+
+<script src="assets/admin.js"></script>
+</body>
+</html>
