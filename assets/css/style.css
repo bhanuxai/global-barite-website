@@ -1999,3 +1999,19 @@ nav a:hover{color:var(--heading)}
   font-size: 15px;
 }
 
+#logoutBtn{
+  background: linear-gradient(135deg,#b7791f,#8b5a18);
+  color: #000;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: .25s ease;
+}
+
+#logoutBtn:hover{
+  background:#d69e2e;
+  transform: translateY(-1px);
+}
+

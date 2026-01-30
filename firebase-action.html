@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Redirecting...</title>
+</head>
+<body>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const mode = params.get("mode");
+  const oobCode = params.get("oobCode");
+
+  if (mode === "resetPassword" && oobCode) {
+    window.location.href =
+      "reset-password.html?oobCode=" + oobCode;
+  } else {
+    document.body.innerHTML = "Invalid or expired link";
+  }
+</script>
+
+</body>
+</html>
