@@ -24,14 +24,16 @@
 
     <!-- NAV LINKS -->
     <nav id="nav-menu">
-      <a href="index.html">Home</a>
-      <a href="products.html">Products</a>
-      <a href="operations.html">Operations</a>
-      <a href="quality.html">Quality</a>
-      <a href="contact.html">Contact</a>
-      <a href="login.html" class="mobile-only">Log In</a>
-      <a href="get-quote.html" class="btn-primary mobile-only">Get Quote</a>
-    </nav>
+  <a href="index.html">Home</a>
+  <a href="products.html">Products</a>
+  <a href="operations.html">Operations</a>
+  <a href="quality.html">Quality</a>
+  <a href="contact.html">Contact</a>
+  <a href="my-quotes.html">My Quotes</a>
+  <a href="login.html" class="mobile-only">Log In</a>
+  <a href="get-quote.html" class="btn-primary mobile-only">Get Quote</a>
+</nav>
+
 
   </div>
 </header>
@@ -67,63 +69,65 @@
 
     <!-- FORM -->
     <div class="quote-card">
-      <form>
+      <form id="quoteForm">
 
-        <div class="form-row">
-          <div class="form-group">
-            <label>Company Name</label>
-            <input type="text" required>
-          </div>
+<div class="form-row">
+  <div class="form-group">
+    <label>Company Name</label>
+    <input type="text" id="company" required>
+  </div>
 
-          <div class="form-group">
-            <label>Contact Person</label>
-            <input type="text" required>
-          </div>
-        </div>
+  <div class="form-group">
+    <label>Contact Person</label>
+    <input type="text" id="name" required>
+  </div>
+</div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label>Email Address</label>
-            <input type="email" required>
-          </div>
+<div class="form-row">
+  <div class="form-group">
+    <label>Email Address</label>
+    <input type="email" id="email" required>
+  </div>
 
-          <div class="form-group">
-            <label>Phone Number</label>
-            <input type="tel" required>
-          </div>
-        </div>
+  <div class="form-group">
+    <label>Phone Number</label>
+    <input type="tel" id="phone" required>
+  </div>
+</div>
 
-        <div class="form-group">
-          <label>Product</label>
-          <select required>
-            <option value="">Select Product</option>
-            <option>API Grade Barite Lumps – 4.22 SG</option>
-            <option>Micronized Barite – 4.20 SG – 400 Mesh</option>
-            <option>API Barite Powder – 4.20 SG – 200 Mesh</option>
-            <option>API Barite Powder – 4.10 SG – 200 Mesh</option>
-          </select>
-        </div>
+<div class="form-group">
+  <label>Product</label>
+  <select id="product" required>
+    <option value="">Select Product</option>
+    <option>API Grade Barite Lumps – 4.22 SG</option>
+    <option>Micronized Barite – 4.20 SG – 400 Mesh</option>
+    <option>API Barite Powder – 4.20 SG – 200 Mesh</option>
+    <option>API Barite Powder – 4.10 SG – 200 Mesh</option>
+  </select>
+</div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label>Quantity (MT)</label>
-            <input type="number" required>
-          </div>
+<div class="form-row">
+  <div class="form-group">
+    <label>Quantity (MT)</label>
+    <input type="number" id="quantity" required>
+  </div>
 
-          <div class="form-group">
-            <label>Destination Country</label>
-            <input type="text" required>
-          </div>
-        </div>
+  <div class="form-group">
+    <label>Destination Country</label>
+    <input type="text" id="country" required>
+  </div>
+</div>
 
-        <div class="form-group">
-          <label>Additional Requirements</label>
-          <textarea rows="4" placeholder="Packaging, mesh size, delivery terms, etc."></textarea>
-        </div>
-
-        <button type="submit" class="btn-primary full-width">
-          Submit Inquiry
-        </button>
+<div class="form-group">
+  <label>Additional Requirements</label>
+  <textarea id="message" rows="4"></textarea>
+</div>
+<button type="submit" class="btn-primary full-width">
+  Submit Request
+</button>
+<div class="auth-footer" style="margin-top:16px;text-align:center">
+  <a href="my-quotes.html">View My Quotes</a>
+</div>
 
       </form>
     </div>
@@ -137,6 +141,75 @@
   </div>
 </footer>
 <script src="assets/js/main.js"></script>
+<script type="module">
+  import { auth } from "./assets/js/firebase.js";
+  import { onAuthStateChanged } from
+    "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+
+  onAuthStateChanged(auth, (user) => {
+    if (!user) {
+      alert("Please login to submit a quote");
+      window.location.href = "login.html";
+    }
+  });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+<script>
+  emailjs.init("4Izq09quDKZszZZWO");
+</script>
+<script type="module">
+  import { auth, db } from "./assets/js/firebase.js";
+  import {
+    addDoc,
+    collection,
+    serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+
+  const form = document.getElementById("quoteForm");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const data = {
+      company: document.getElementById("company").value.trim(),
+      name: document.getElementById("name").value.trim(),
+      email: document.getElementById("email").value.trim(),
+      phone: document.getElementById("phone").value.trim(),
+      product: document.getElementById("product").value,
+      quantity: document.getElementById("quantity").value,
+      country: document.getElementById("country").value.trim(),
+      message: document.getElementById("message").value.trim(),
+      status: "new"
+    };
+
+    try {
+      // 1️⃣ Save to Firestore
+      await addDoc(collection(db, "quotes"), {
+        ...data,
+        userId: auth.currentUser?.uid || null,
+        createdAt: serverTimestamp()
+      });
+
+      // 2️⃣ Send confirmation email to CLIENT
+      await emailjs.send(
+        "service_k5nmn0d",     // SERVICE ID
+        "template_c8htuv5",    // TEMPLATE ID
+        data                   // MUST MATCH TEMPLATE VARIABLES
+      );
+
+      alert("Quote submitted successfully. Confirmation email sent.");
+      form.reset();
+
+    } catch (err) {
+      console.error("EMAIL ERROR:", err);
+      alert("Quote saved, but email failed. Please contact support.");
+    }
+  });
+</script>
+
+
+
+
 
 </body>
 </html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin | Quotes Dashboard</title>
+
+<link rel="stylesheet" href="assets/css/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body class="dark-body">
+
+<header class="navbar">
+  <div class="container nav-inner">
+    <div class="logo">GLOBAL BARITE – ADMIN</div>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="gb-admin-9x2k.html" class="active">Quotes</a>
+      <button id="logoutBtn" class="btn-outline">Logout</button>
+    </nav>
+  </div>
+</header>
+
+<section class="quote-hero">
+  <div class="container">
+    <h1>Quote Requests</h1>
+    <p>Manage and respond to customer inquiries</p>
+  </div>
+</section>
+
+<section class="quote-form-section">
+  <div class="container">
+    <div id="quotesList"></div>
+  </div>
+</section>
+
+<script type="module">
+import { auth, db } from "./assets/js/firebase.js";
+import { onAuthStateChanged, signOut } from
+  "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+import {
+  collection,
+  getDocs,
+  orderBy,
+  query,
+  updateDoc,
+  doc,
+  getDoc
+} from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+
+const quotesList = document.getElementById("quotesList");
+const logoutBtn = document.getElementById("logoutBtn");
+
+// 🔐 AUTH + ADMIN CHECK
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  const userSnap = await getDoc(doc(db, "users", user.uid));
+
+  if (!userSnap.exists() || userSnap.data().role !== "admin") {
+    alert("Access denied");
+    window.location.href = "index.html";
+    return;
+  }
+
+  loadQuotes();
+});
+
+// 🚪 LOGOUT
+logoutBtn.addEventListener("click", async () => {
+  await signOut(auth);
+  window.location.href = "login.html";
+});
+
+// 📦 LOAD QUOTES
+async function loadQuotes() {
+  const q = query(
+    collection(db, "quotes"),
+    orderBy("createdAt", "desc")
+  );
+
+  const snapshot = await getDocs(q);
+
+  if (snapshot.empty) {
+    quotesList.innerHTML = "<p>No quotes found.</p>";
+    return;
+  }
+
+  quotesList.innerHTML = "";
+
+  snapshot.forEach((docSnap) => {
+    const data = docSnap.data();
+
+    quotesList.innerHTML += `
+      <div class="quote-card" style="margin-bottom:24px">
+        <h3>${data.product}</h3>
+
+        <p><strong>Company:</strong> ${data.company}</p>
+        <p><strong>Contact:</strong> ${data.name}</p>
+        <p><strong>Email:</strong> ${data.email}</p>
+        <p><strong>Phone:</strong> ${data.phone}</p>
+        <p><strong>Quantity:</strong> ${data.quantity} MT</p>
+        <p><strong>Country:</strong> ${data.country}</p>
+
+        <label><strong>Status</strong></label>
+        <select
+          onchange="updateStatus('${docSnap.id}', this.value)"
+          style="margin-bottom:10px"
+        >
+          <option ${data.status==="new"?"selected":""}>new</option>
+          <option ${data.status==="reviewing"?"selected":""}>reviewing</option>
+          <option ${data.status==="contacted"?"selected":""}>contacted</option>
+          <option ${data.status==="closed"?"selected":""}>closed</option>
+        </select>
+
+        <div style="display:flex; gap:10px">
+          <a
+            class="btn-outline"
+            href="mailto:${data.email}?subject=Quote Update - Global Barite"
+          >Email</a>
+
+          <a
+            class="btn-primary"
+            target="_blank"
+            href="https://wa.me/91${data.phone}"
+          >WhatsApp</a>
+        </div>
+      </div>
+    `;
+  });
+}
+
+// 🔁 UPDATE STATUS
+window.updateStatus = async (id, status) => {
+  await updateDoc(doc(db, "quotes", id), { status });
+  alert("Status updated");
+};
+</script>
+<script>
+  document.addEventListener("contextmenu", function (e) {
+    e.preventDefault();
+  });
+
+  document.addEventListener("keydown", function (e) {
+    if (
+      e.key === "F12" ||
+      (e.ctrlKey && e.shiftKey && e.key === "I") ||
+      (e.ctrlKey && e.shiftKey && e.key === "J") ||
+      (e.ctrlKey && e.key === "U")
+    ) {
+      e.preventDefault();
+    }
+  });
+</script>
+
+</body>
+</html>

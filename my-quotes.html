@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Quotes | Global Barite</title>
+
+<link rel="stylesheet" href="assets/css/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body class="dark-body">
+
+<header class="navbar">
+  <div class="container nav-inner">
+    <div class="logo">GLOBAL BARITE</div>
+    <nav id="nav-menu">
+      <a href="index.html">Home</a>
+      <a href="products.html">Products</a>
+      <a href="get-quote.html">Get Quote</a>
+      <a href="my-quotes.html" class="active">My Quotes</a>
+    </nav>
+  </div>
+</header>
+
+<section class="quote-hero">
+  <div class="container">
+    <h1>My Quotes</h1>
+    <p>Track status of your submitted quote requests</p>
+  </div>
+</section>
+
+<section class="quote-form-section">
+  <div class="container">
+    <div id="quotesList"></div>
+    
+  </div>
+</section>
+
+<script type="module">
+  import { auth, db } from "./assets/js/firebase.js";
+  import { onAuthStateChanged } from
+    "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+  import {
+    collection,
+    query,
+    where,
+    orderBy,
+    getDocs
+  } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+
+  const quotesList = document.getElementById("quotesList");
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      window.location.href = "login.html";
+      return;
+    }
+
+    const q = query(
+      collection(db, "quotes"),
+      where("userId", "==", user.uid),
+      orderBy("createdAt", "desc")
+    );
+
+    const snapshot = await getDocs(q);
+
+    if (snapshot.empty) {
+      quotesList.innerHTML = "<p>No quotes submitted yet.</p>";
+      return;
+    }
+
+    snapshot.forEach(doc => {
+      const data = doc.data();
+
+      quotesList.innerHTML += `
+        <div class="quote-card" style="margin-bottom:20px">
+          <h3>${data.product}</h3>
+          <p><strong>Company:</strong> ${data.company}</p>
+          <p><strong>Quantity:</strong> ${data.quantity} MT</p>
+          <p><strong>Country:</strong> ${data.country}</p>
+          <p>
+  <strong>Status:</strong>
+  <span class="status-badge status-${data.status}">
+    ${data.status}
+  </span>
+</p>
+
+        </div>
+      `;
+    });
+  });
+</script>
+
+</body>
+</html>

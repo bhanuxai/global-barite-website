@@ -38,7 +38,7 @@
 <section class="auth-section">
   <div class="auth-card">
 
-    <h1>Request Access</h1>
+    <h1>Create Account</h1>
     <p class="auth-subtext">
       Create your Global Barite account to access documents
       and manage inquiries.
@@ -81,10 +81,13 @@
 <script src="assets/js/main.js"></script>
 
 <!-- FIREBASE SIGNUP -->
+
 <script type="module">
   import { auth, db } from "./assets/js/firebase.js";
-  import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
-  import { doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+  import { createUserWithEmailAndPassword }
+    from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+  import { doc, setDoc, serverTimestamp }
+    from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
   const form = document.getElementById("signupForm");
 
@@ -101,25 +104,31 @@
     }
 
     try {
-      const userCred = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCred.user;
+      // 1️⃣ Create Auth user
+      const userCredential =
+        await createUserWithEmailAndPassword(auth, email, password);
 
+      const user = userCredential.user;
+
+      // 2️⃣ Store user in Firestore
       await setDoc(doc(db, "users", user.uid), {
         username: username,
-        email: email,
+        email: user.email,
         role: "client",
         approved: false,
         createdAt: serverTimestamp()
       });
 
-      alert("Account created. Please login.");
+      alert("Account created successfully");
       window.location.href = "login.html";
 
-    } catch (error) {
-      alert(error.message);
+    } catch (err) {
+      alert(err.message);
     }
   });
 </script>
+
+
 
 </body>
 </html>
