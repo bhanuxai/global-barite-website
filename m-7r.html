@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Contact Requests | Global Barite</title>
+
+<link rel="stylesheet" href="assets/css/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body class="dark-body">
+
+<header class="navbar">
+  <div class="container nav-inner">
+    <div class="logo">GLOBAL BARITE</div>
+    <nav id="nav-menu">
+      <a href="index.html">Home</a>
+      <a href="products.html">Products</a>
+      <a href="operations.html">Operations</a>
+      <a href="quality.html">Quality</a>
+      <a href="contact.html">Contact</a>
+      <a href="m-7r.html" class="active">My Messages</a>
+      <a href="logout.html">Logout</a>
+    </nav>
+  </div>
+</header>
+
+<section class="quote-hero">
+  <div class="container">
+    <h1>My Contact Messages</h1>
+    <p>View replies from Global Barite team</p>
+  </div>
+</section>
+
+<section class="quote-form-section">
+  <div class="container">
+    <div id="contactList"></div>
+  </div>
+</section>
+
+<script type="module">
+import { auth, db } from "./assets/js/firebase.js";
+import { onAuthStateChanged } from
+  "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+import {
+  collection,
+  query,
+  where,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+
+const contactList = document.getElementById("contactList");
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  console.log("AUTH UID:", user.uid);
+
+  try {
+    const q = query(
+      collection(db, "contacts"),
+      where("userId", "==", user.uid)
+    );
+
+    const snapshot = await getDocs(q);
+
+    if (snapshot.empty) {
+      contactList.innerHTML =
+        "<p>You have not submitted any contact requests yet.</p>";
+      return;
+    }
+
+    contactList.innerHTML = "";
+
+    snapshot.forEach((doc) => {
+      const d = doc.data();
+
+      contactList.innerHTML += `
+        <div class="quote-card" style="margin-bottom:20px">
+          <p><strong>Your Message:</strong></p>
+          <p>${d.message}</p>
+
+          <p style="margin-top:10px">
+            <strong>Status:</strong>
+            <span style="
+              color:${d.status === "replied" ? "#4ade80" : "#facc15"};
+              font-weight:600
+            ">
+              ${d.status.toUpperCase()}
+            </span>
+          </p>
+
+          ${
+            d.reply
+              ? `
+                <hr style="margin:12px 0">
+                <p><strong>Admin Reply:</strong></p>
+                <p>${d.reply}</p>
+              `
+              : `
+                <p style="margin-top:10px;color:#999">
+                  Waiting for admin response…
+                </p>
+              `
+          }
+        </div>
+      `;
+    });
+
+  } catch (err) {
+    console.error("Error loading contacts:", err);
+    contactList.innerHTML =
+      "<p>Failed to load messages. Please try again.</p>";
+  }
+});
+</script>
+
+</body>
+</html>

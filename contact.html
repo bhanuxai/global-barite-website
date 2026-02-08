@@ -9,112 +9,126 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 
-<body>
+<body class="light-body">
 
 <header class="navbar">
   <div class="container nav-inner">
 
     <div class="logo">GLOBAL BARITE</div>
 
-    <!-- HAMBURGER -->
     <button class="hamburger" id="hamburger">
-      <span></span>
-      <span></span>
-      <span></span>
+      <span></span><span></span><span></span>
     </button>
 
-    <!-- NAV LINKS -->
     <nav id="nav-menu">
       <a href="index.html">Home</a>
       <a href="products.html">Products</a>
       <a href="operations.html">Operations</a>
       <a href="quality.html">Quality</a>
-      <a href="contact.html">Contact</a>
+      <a href="contact.html" class="active">Contact</a>
       <a href="login.html" class="mobile-only">Log In</a>
       <a href="get-quote.html" class="btn-primary mobile-only">Get Quote</a>
+      <a href="m-7r.html">My Messages</a>
+
     </nav>
 
   </div>
 </header>
-<!-- PAGE HERO -->
+
+<!-- HERO -->
 <section class="page-hero">
   <div class="container">
-    <h1>Contact Global Barite</h1>
+    <h1>Contact Us</h1>
     <p>
-      For product specifications, pricing, and bulk supply
-      inquiries, please reach out to our team.
+      Reach out for bulk supply, specifications, pricing,
+      or long-term supply partnerships.
     </p>
   </div>
 </section>
 
-<!-- CONTACT SECTION -->
+<!-- CONTACT -->
 <section class="contact-section">
   <div class="container contact-grid">
-
-    <!-- CONTACT INFO -->
+    <!-- LEFT -->
     <div class="contact-info">
-      <h3>Get in Touch</h3>
+      <h3>Corporate Office</h3><br>
 
       <div class="contact-block">
         <span class="contact-label">Sales & Inquiries</span>
         <p>sales@globalbarite.com</p>
-        <p>+91 XXXXXXXXXX</p>
+        <p>+91 7416239635</p>
       </div>
 
       <div class="contact-block">
-        <span class="contact-label">Business</span>
-        <p>Mining, Processing & Export</p>
+        <span class="contact-label">Business Focus</span>
+        <p>Mining • Processing • Export</p>
       </div>
 
       <div class="contact-block">
-        <span class="contact-label">Location</span>
-        <p>India</p>
+        <span class="contact-label">Operating Region</span>
+        <p>India & International Markets</p>
       </div>
     </div>
+    <br>
 
-    <!-- CONTACT FORM -->
-    <div class="contact-form">
-      <h3>Inquiry Form</h3>
+    <!-- RIGHT -->
+    <div class="contact-form-card">
+      <h3>Send an Inquiry</h3>
+      <p class="form-subtext">
+        Our team usually responds within 24 hours.
+      </p>
 
-      <form>
-        <div class="form-group">
-          <label>Full Name</label>
-          <input type="text" required>
+      <form id="contactForm">
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="name" required>
+          </div>
+
+          <div class="form-group">
+            <label>Company</label>
+            <input type="text" id="company">
+          </div>
         </div>
 
-        <div class="form-group">
-          <label>Company Name</label>
-          <input type="text">
-        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="email" required>
+          </div>
 
-        <div class="form-group">
-          <label>Email Address</label>
-          <input type="email" required>
-        </div>
-
-        <div class="form-group">
-          <label>Phone Number</label>
-          <input type="text">
+          <div class="form-group">
+            <label>Phone</label>
+            <input type="text" id="phone">
+          </div>
         </div>
 
         <div class="form-group">
           <label>Product of Interest</label>
-          <select>
+          <select id="product">
+            <option>None of these</option>
             <option>Barite Lumps (API Grade)</option>
-            <option>Micronized Barite Powder 4.20 SG – 400 Mesh</option>
-            <option>Barite Powder 4.20 SG – 200 Mesh</option>
-            <option>Barite Powder 4.10 SG – 200 Mesh</option>
+            <option>Micronized Barite Powder – 400 Mesh</option>
+            <option>Barite Powder – 200 Mesh</option>
+            <option>Barite Powder – 4.10 SG</option>
           </select>
         </div>
 
         <div class="form-group">
           <label>Message</label>
-          <textarea rows="4"></textarea>
+          <textarea id="message" rows="4" required></textarea>
         </div>
 
-        <button type="submit" class="btn-primary">
+        <button type="submit" class="btn-primary full-width">
           Submit Inquiry
         </button>
+        <div class="auth-footer" style="margin-top:18px;text-align:center">
+  <a href="m-7r.html" style="font-weight:600">
+    View your contact history →
+  </a>
+</div>
+
       </form>
     </div>
 
@@ -123,13 +137,81 @@
 
 <!-- FOOTER -->
 <footer class="site-footer">
-  <div class="container footer-bottom-inner">
-    <span>© 2026 Global Barite. All rights reserved.</span>
-    <span>Mining • Processing • Export</span>
+  <div class="container footer-grid">
+
+    <div>
+      <strong>Global Barite</strong>
+      <p>Mining • Processing • Export</p>
+    </div>
+
+    <div>
+      <p>© 2026 Global Barite</p>
+      <p>All rights reserved</p>
+    </div>
+
+    <div>
+      <p>India</p>
+      <p>Serving global markets</p>
+    </div>
+
   </div>
 </footer>
+<script type="module">
+  import { auth, db } from "./assets/js/firebase.js";
+  import {
+    addDoc,
+    collection,
+    serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+
+  const form = document.getElementById("contactForm");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const name = document.getElementById("name").value.trim();
+    const company = document.getElementById("company").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+    const product = document.getElementById("product").value;
+    const message = document.getElementById("message").value.trim();
+
+    if (!name || !email || !message) {
+      alert("Please fill required fields");
+      return;
+    }
+
+    const data = {
+      name,
+      company,
+      email,
+      phone,
+      product,
+      message,
+      userId: auth.currentUser ? auth.currentUser.uid : null,
+      status: "new",
+      createdAt: serverTimestamp()
+    };
+
+    try {
+      await addDoc(collection(db, "contacts"), data);
+
+      alert("Inquiry sent successfully. Redirecting to your messages...");
+form.reset();
+
+setTimeout(() => {
+  window.location.href = "m-7r.html";
+}, 1500);
+
+
+    } catch (err) {
+      console.error(err);
+      alert("Failed to send inquiry. Try again.");
+    }
+  });
+</script>
+
+
 <script src="assets/js/main.js"></script>
-
-
 </body>
 </html>

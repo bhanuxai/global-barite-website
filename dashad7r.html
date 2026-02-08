@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard | Global Barite</title>
+
+<link rel="stylesheet" href="assets/css/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 260px;
+  background: #0f172a;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-logo {
+  padding: 20px;
+  font-weight: 700;
+  font-size: 18px;
+  border-bottom: 1px solid #1e293b;
+}
+
+.sidebar-nav a {
+  padding: 14px 20px;
+  display: block;
+  color: #cbd5f5;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.sidebar-nav a:hover,
+.sidebar-nav a.active {
+  background: #1e293b;
+  color: #fff;
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 20px;
+  border-top: 1px solid #1e293b;
+}
+
+.sidebar-footer button {
+  width: 100%;
+}
+
+.admin-main {
+  flex: 1;
+  background: #f8fafc;
+  padding: 24px;
+}
+
+.admin-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.stat-card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,.04);
+}
+
+.stat-card h4 {
+  font-size: 14px;
+  color: #64748b;
+}
+
+.stat-card strong {
+  font-size: 28px;
+}
+
+.table-card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,.04);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 12px;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+}
+
+.status {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status.new { background:#fde68a; color:#92400e; }
+.status.reviewing { background:#bfdbfe; color:#1e40af; }
+.status.contacted { background:#bbf7d0; color:#166534; }
+.status.closed { background:#e5e7eb; color:#374151; }
+.badge {
+  background: #ef4444;
+  color: #fff;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  margin-left: 8px;
+  font-weight: 600;
+}
+
+.hidden {
+  display: none;
+}
+.sidebar-nav a {
+  cursor: pointer;
+}
+
+
+</style>
+</head>
+
+<body>
+
+<div class="admin-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">GLOBAL BARITE</div>
+
+    <nav class="sidebar-nav">
+      <a class="active" href="dashad7r.html">Dashboard</a>
+      <a href="gb-admin-9x2k.html">
+  Quote Requests
+  <span id="quoteBadge" class="badge hidden">0</span>
+</a>
+
+<a href="contact7xad.html">
+  Contact Inquiries
+  <span id="contactBadge" class="badge hidden">0</span>
+</a>
+
+      <a href="users7xad.html">Users</a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button id="logoutBtn" class="btn-outline">Logout</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="admin-main">
+
+    <header class="admin-top">
+      <h1>Admin Dashboard</h1>
+      <span>Welcome, Admin</span>
+    </header>
+
+    <!-- STATS -->
+    <section class="stats-grid">
+      <div class="stat-card">
+        <h4>Quote Requests</h4>
+        <strong id="quotesCount">0</strong>
+      </div>
+
+      <div class="stat-card">
+        <h4>Contact Inquiries</h4>
+        <strong id="contactsCount">0</strong>
+      </div>
+
+      <div class="stat-card">
+        <h4>Active Products</h4>
+        <strong>4</strong>
+      </div>
+    </section>
+
+    <!-- RECENT QUOTES -->
+    <section class="table-card">
+      <h3 style="margin-bottom:12px">Recent Quote Requests</h3>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Company</th>
+            <th>Product</th>
+            <th>Quantity</th>
+            <th>Country</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+
+        <tbody id="recentQuotes"></tbody>
+      </table>
+    </section>
+
+  </main>
+
+</div>
+
+<script type="module">
+import { auth, db } from "./assets/js/firebase.js";
+import { onAuthStateChanged, signOut } from
+  "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+import {
+  collection,
+  getDocs,
+  query,
+  orderBy,
+  limit,
+  where,
+  doc,
+  getDoc
+} from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+
+const quotesCount = document.getElementById("quotesCount");
+const contactsCount = document.getElementById("contactsCount");
+const recentQuotes = document.getElementById("recentQuotes");
+const logoutBtn = document.getElementById("logoutBtn");
+
+// 🔐 AUTH + ADMIN CHECK
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  const snap = await getDoc(doc(db, "users", user.uid));
+  if (!snap.exists() || snap.data().role !== "admin") {
+    alert("Access denied");
+    window.location.href = "index.html";
+    return;
+  }
+
+  loadStats();
+  loadRecentQuotes();
+});
+
+// 🚪 LOGOUT
+logoutBtn.addEventListener("click", async () => {
+  await signOut(auth);
+  window.location.href = "login.html";
+});
+
+// 📊 STATS
+const quoteBadge = document.getElementById("quoteBadge");
+const contactBadge = document.getElementById("contactBadge");
+
+async function loadStats() {
+  const quotesSnap = await getDocs(collection(db, "quotes"));
+  const contactsSnap = await getDocs(collection(db, "contacts"));
+
+  quotesCount.innerText = quotesSnap.size;
+  contactsCount.innerText = contactsSnap.size;
+
+  // 🔴 PENDING QUOTES
+  const pendingQuotes = quotesSnap.docs.filter(
+    d => d.data().status === "new"
+  ).length;
+
+  if (pendingQuotes > 0) {
+    quoteBadge.innerText = pendingQuotes;
+    quoteBadge.classList.remove("hidden");
+  } else {
+    quoteBadge.classList.add("hidden");
+  }
+
+  // 🔴 PENDING CONTACTS
+  const pendingContacts = contactsSnap.docs.filter(
+    d => d.data().status === "new"
+  ).length;
+
+  if (pendingContacts > 0) {
+    contactBadge.innerText = pendingContacts;
+    contactBadge.classList.remove("hidden");
+  } else {
+    contactBadge.classList.add("hidden");
+  }
+}
+
+
+// 📋 RECENT QUOTES (SAFE)
+async function loadRecentQuotes() {
+  recentQuotes.innerHTML = `
+    <tr>
+      <td colspan="5" style="text-align:center;color:#94a3b8">
+        Loading recent quotes…
+      </td>
+    </tr>
+  `;
+
+  const q = query(
+    collection(db, "quotes"),
+    orderBy("createdAt", "desc"),
+    limit(5)
+  );
+
+  const snap = await getDocs(q);
+
+  if (snap.empty) {
+    recentQuotes.innerHTML = `
+      <tr>
+        <td colspan="5" style="text-align:center;color:#94a3b8">
+          No quote requests yet
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  recentQuotes.innerHTML = "";
+
+  snap.forEach(d => {
+    const qd = d.data();
+
+    const statusClass = qd.status || "new";
+
+    recentQuotes.innerHTML += `
+      <tr>
+        <td>${qd.company || "-"}</td>
+        <td>${qd.product || "-"}</td>
+        <td>${qd.quantity || "-"}</td>
+        <td>${qd.country || "-"}</td>
+        <td>
+          <span class="status ${statusClass}">
+            ${statusClass.toUpperCase()}
+          </span>
+        </td>
+      </tr>
+    `;
+  });
+}
+</script>
+
+</body>
+</html>

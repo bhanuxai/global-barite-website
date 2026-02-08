@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin | Contact Requests</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, sans-serif;
+  background: #f8fafc;
+  overflow: hidden; /* 🔥 prevent body scroll */
+}
+
+/* SIDEBAR */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 260px;
+  height: 100vh;
+  background: #0f172a;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-logo {
+  padding: 20px;
+  font-weight: 700;
+  font-size: 18px;
+  border-bottom: 1px solid #1e293b;
+}
+
+.sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.sidebar-nav a {
+  padding: 14px 20px;
+  display: block;
+  color: #cbd5f5;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.sidebar-nav a:hover,
+.sidebar-nav a.active {
+  background: #1e293b;
+  color: #fff;
+}
+
+.sidebar-footer {
+  padding: 20px;
+  border-top: 1px solid #1e293b;
+}
+
+.sidebar-footer button {
+  width: 100%;
+  background: transparent;
+  border: 1px solid #cbd5f5;
+  color: #fff;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* MAIN */
+.admin-main {
+  margin-left: 260px;
+  width: calc(100vw - 260px);
+  height: 100vh;
+  overflow-y: auto;
+  padding: 24px;
+  background: #f8fafc;
+}
+
+/* HEADER */
+.page-title h1 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.page-title p {
+  margin-top: 6px;
+  color: #64748b;
+  font-size: 14px;
+}
+
+/* CONTACT CARD */
+.contact-card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,.05);
+  margin-bottom: 20px;
+}
+
+.contact-card p {
+  margin: 6px 0;
+  font-size: 14px;
+}
+
+.status {
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+
+.status.new {
+  background: #fde68a;
+  color: #92400e;
+}
+
+.status.replied {
+  background: #bbf7d0;
+  color: #166534;
+}
+
+textarea {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  font-family: inherit;
+}
+
+.btn-primary {
+  margin-top: 10px;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+</style>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">GLOBAL BARITE</div>
+
+  <nav class="sidebar-nav">
+    <a href="dashad7r.html">Dashboard</a>
+    <a href="gb-admin-9x2k.html">Quote Requests</a>
+    <a href="contact7xad.html" class="active">Contact Inquiries</a>
+    <a href="users7xad.html">Users</a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <button id="logoutBtn">Logout</button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="admin-main">
+
+  <div class="page-title">
+    <h1>Contact Requests</h1>
+    <p>View and reply to customer inquiries</p>
+  </div>
+
+  <div id="contactsList"></div>
+
+</main>
+
+<script type="module">
+import { auth, db } from "./assets/js/firebase.js";
+import { onAuthStateChanged, signOut } from
+  "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+import {
+  collection,
+  getDocs,
+  doc,
+  updateDoc,
+  getDoc,
+  orderBy,
+  query,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+
+const contactsList = document.getElementById("contactsList");
+const logoutBtn = document.getElementById("logoutBtn");
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) return location.href = "login.html";
+
+  const snap = await getDoc(doc(db, "users", user.uid));
+  if (!snap.exists() || snap.data().role !== "admin") {
+    alert("Access denied");
+    return location.href = "index.html";
+  }
+
+  loadContacts();
+});
+
+logoutBtn.onclick = async () => {
+  await signOut(auth);
+  location.href = "login.html";
+};
+
+async function loadContacts() {
+  const q = query(collection(db, "contacts"), orderBy("createdAt", "desc"));
+  const snap = await getDocs(q);
+
+  if (snap.empty) {
+    contactsList.innerHTML = "<p>No contact requests found.</p>";
+    return;
+  }
+
+  contactsList.innerHTML = "";
+
+  snap.forEach(docSnap => {
+    const d = docSnap.data();
+
+    contactsList.innerHTML += `
+      <div class="contact-card">
+        <p><strong>Name:</strong> ${d.name}</p>
+        <p><strong>Email:</strong> ${d.email}</p>
+        <p><strong>Company:</strong> ${d.company || "-"}</p>
+        <p><strong>Message:</strong> ${d.message}</p>
+
+        <p>
+          <strong>Status:</strong>
+          <span class="status ${d.status}">
+            ${d.status.toUpperCase()}
+          </span>
+        </p>
+
+        <textarea id="reply-${docSnap.id}"
+          placeholder="Type your reply here...">${d.reply || ""}</textarea>
+
+        <button class="btn-primary"
+          onclick="sendReply('${docSnap.id}')">
+          Send Reply
+        </button>
+      </div>
+    `;
+  });
+}
+
+window.sendReply = async (id) => {
+  const reply = document.getElementById(`reply-${id}`).value.trim();
+  if (!reply) return alert("Reply cannot be empty");
+
+  await updateDoc(doc(db, "contacts", id), {
+    reply,
+    status: "replied",
+    repliedAt: serverTimestamp()
+  });
+
+  alert("Reply sent");
+  loadContacts();
+};
+</script>
+
+</body>
+</html>

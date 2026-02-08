@@ -3,37 +3,188 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin | Quotes Dashboard</title>
+<title>Admin | Quote Requests</title>
 
-<link rel="stylesheet" href="assets/css/style.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+body {
+  margin: 0;
+  font-family: Inter, sans-serif;
+  background: #f8fafc;
+  overflow: hidden;
+}
+
+.admin-layout {
+  min-height: 100vh;
+}
+
+
+/* SIDEBAR */
+.sidebar {
+  width: 260px;
+  background: #0f172a;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+
+  position: fixed;     /* 🔥 IMPORTANT */
+  top: 0;
+  left: 0;
+  height: 100vh;       /* full screen height */
+  z-index: 100;
+}
+
+
+.sidebar-logo {
+  padding: 20px;
+  font-weight: 700;
+  font-size: 18px;
+  border-bottom: 1px solid #1e293b;
+}
+
+.sidebar-nav a {
+  padding: 14px 20px;
+  display: block;
+  color: #cbd5f5;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.sidebar-nav a:hover,
+.sidebar-nav a.active {
+  background: #1e293b;
+  color: #fff;
+}
+
+.sidebar-footer {
+  padding: 20px;
+  border-top: 1px solid #1e293b;
+  background: #0f172a;
+}
+.sidebar-nav {
+  flex: 1;               /* 🔥 pushes footer down */
+  overflow-y: auto;      /* 🔥 scroll inside sidebar */
+}
+
+
+.sidebar-footer button {
+  width: 100%;
+}
+
+/* MAIN */
+.admin-main {
+  margin-left: 260px;                 /* sidebar width */
+  width: calc(100vw - 260px);         /* 🔥 IMPORTANT */
+  height: 100vh;
+  overflow-y: auto;
+  padding: 24px;
+  background: #f8fafc;
+  box-sizing: border-box;
+  scrollbar-gutter: stable;
+}
+
+
+
+.admin-top {
+  margin-bottom: 24px;
+}
+
+.admin-top h1 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.admin-top p {
+  margin-top: 6px;
+  color: #64748b;
+  font-size: 14px;
+}
+
+/* QUOTE CARD */
+.quote-card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,.05);
+  margin-bottom: 20px;
+}
+
+.quote-card h3 {
+  margin-top: 0;
+}
+
+.quote-card p {
+  margin: 6px 0;
+  font-size: 14px;
+}
+
+select {
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.btn-primary {
+  background: #2563eb;
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid #2563eb;
+  color: #2563eb;
+  padding: 8px 14px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+}
+</style>
 </head>
 
-<body class="dark-body">
+<body>
 
-<header class="navbar">
-  <div class="container nav-inner">
-    <div class="logo">GLOBAL BARITE – ADMIN</div>
-    <nav>
-      <a href="index.html">Home</a>
-      <a href="gb-admin-9x2k.html" class="active">Quotes</a>
-      <button id="logoutBtn" class="btn-outline">Logout</button>
+<div class="admin-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">GLOBAL BARITE</div>
+
+    <nav class="sidebar-nav">
+      <a href="dashad7r.html">Dashboard</a>
+      <a href="gb-admin-9x2k.html" class="active">Quote Requests</a>
+      <a href="contact7xad.html">Contact Inquiries</a>
+      <a href="users7xad.html">Users</a>
     </nav>
-  </div>
-</header>
 
-<section class="quote-hero">
-  <div class="container">
-    <h1>Quote Requests</h1>
-    <p>Manage and respond to customer inquiries</p>
-  </div>
-</section>
+    <div class="sidebar-footer">
+      <button id="logoutBtn" class="btn-outline">Logout</button>
+    </div>
+  </aside>
 
-<section class="quote-form-section">
-  <div class="container">
+  <!-- MAIN -->
+  <main class="admin-main">
+
+    <div class="admin-top">
+      <h1>Quote Requests</h1>
+      <p>Manage and respond to customer quote inquiries</p>
+    </div>
+
     <div id="quotesList"></div>
-  </div>
-</section>
+
+  </main>
+
+</div>
 
 <script type="module">
 import { auth, db } from "./assets/js/firebase.js";
@@ -52,16 +203,15 @@ import {
 const quotesList = document.getElementById("quotesList");
 const logoutBtn = document.getElementById("logoutBtn");
 
-// 🔐 AUTH + ADMIN CHECK
+// 🔐 ADMIN CHECK
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     window.location.href = "login.html";
     return;
   }
 
-  const userSnap = await getDoc(doc(db, "users", user.uid));
-
-  if (!userSnap.exists() || userSnap.data().role !== "admin") {
+  const snap = await getDoc(doc(db, "users", user.uid));
+  if (!snap.exists() || snap.data().role !== "admin") {
     alert("Access denied");
     window.location.href = "index.html";
     return;
@@ -83,51 +233,49 @@ async function loadQuotes() {
     orderBy("createdAt", "desc")
   );
 
-  const snapshot = await getDocs(q);
+  const snap = await getDocs(q);
 
-  if (snapshot.empty) {
-    quotesList.innerHTML = "<p>No quotes found.</p>";
+  if (snap.empty) {
+    quotesList.innerHTML =
+      "<p style='color:#64748b'>No quote requests found.</p>";
     return;
   }
 
   quotesList.innerHTML = "";
 
-  snapshot.forEach((docSnap) => {
-    const data = docSnap.data();
+  snap.forEach(docSnap => {
+    const d = docSnap.data();
 
     quotesList.innerHTML += `
-      <div class="quote-card" style="margin-bottom:24px">
-        <h3>${data.product}</h3>
+      <div class="quote-card">
+        <h3>${d.product}</h3>
 
-        <p><strong>Company:</strong> ${data.company}</p>
-        <p><strong>Contact:</strong> ${data.name}</p>
-        <p><strong>Email:</strong> ${data.email}</p>
-        <p><strong>Phone:</strong> ${data.phone}</p>
-        <p><strong>Quantity:</strong> ${data.quantity} MT</p>
-        <p><strong>Country:</strong> ${data.country}</p>
+        <p><strong>Company:</strong> ${d.company}</p>
+        <p><strong>Contact:</strong> ${d.name}</p>
+        <p><strong>Email:</strong> ${d.email}</p>
+        <p><strong>Phone:</strong> ${d.phone}</p>
+        <p><strong>Quantity:</strong> ${d.quantity} MT</p>
+        <p><strong>Country:</strong> ${d.country}</p>
 
-        <label><strong>Status</strong></label>
-        <select
-          onchange="updateStatus('${docSnap.id}', this.value)"
-          style="margin-bottom:10px"
-        >
-          <option ${data.status==="new"?"selected":""}>new</option>
-          <option ${data.status==="reviewing"?"selected":""}>reviewing</option>
-          <option ${data.status==="contacted"?"selected":""}>contacted</option>
-          <option ${data.status==="closed"?"selected":""}>closed</option>
+        <label><strong>Status</strong></label><br>
+        <select onchange="updateStatus('${docSnap.id}', this.value)">
+          <option ${d.status==="new"?"selected":""}>new</option>
+          <option ${d.status==="reviewing"?"selected":""}>reviewing</option>
+          <option ${d.status==="contacted"?"selected":""}>contacted</option>
+          <option ${d.status==="closed"?"selected":""}>closed</option>
         </select>
 
-        <div style="display:flex; gap:10px">
-          <a
-            class="btn-outline"
-            href="mailto:${data.email}?subject=Quote Update - Global Barite"
-          >Email</a>
+        <div class="actions">
+          <a class="btn-outline"
+             href="mailto:${d.email}?subject=Quote Update - Global Barite">
+             Email
+          </a>
 
-          <a
-            class="btn-primary"
-            target="_blank"
-            href="https://wa.me/91${data.phone}"
-          >WhatsApp</a>
+          <a class="btn-primary"
+             target="_blank"
+             href="https://wa.me/91${d.phone}">
+             WhatsApp
+          </a>
         </div>
       </div>
     `;
@@ -139,22 +287,6 @@ window.updateStatus = async (id, status) => {
   await updateDoc(doc(db, "quotes", id), { status });
   alert("Status updated");
 };
-</script>
-<script>
-  document.addEventListener("contextmenu", function (e) {
-    e.preventDefault();
-  });
-
-  document.addEventListener("keydown", function (e) {
-    if (
-      e.key === "F12" ||
-      (e.ctrlKey && e.shiftKey && e.key === "I") ||
-      (e.ctrlKey && e.shiftKey && e.key === "J") ||
-      (e.ctrlKey && e.key === "U")
-    ) {
-      e.preventDefault();
-    }
-  });
 </script>
 
 </body>
